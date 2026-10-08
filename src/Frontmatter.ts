@@ -44,6 +44,26 @@ export function getBookValues(
 
 	Object.keys(currentYAML).forEach((key: string) => {
 		const value = currentYAML[key];
+
+		// `tags` is a static, custom field: it does not template
+		// around a book property. Its dictionary value is a plain
+		// comma-separated tag list (e.g. `Book, Reading`).
+		if (key === "tags") {
+			const customTags: string[] = value
+				.split(",")
+				.map((tag) => tag.trim().replace(/^#/, ""))
+				.filter((tag) => tag.length > 0);
+
+			if (Array.isArray(output["tags"])) {
+				output["tags"] = (
+					output["tags"] as string[]
+				).concat(customTags);
+			} else {
+				output["tags"] = customTags;
+			}
+			return;
+		}
+
 		const [prefix, postfix] = value.split(key);
 
 		if (key === "shelves") {

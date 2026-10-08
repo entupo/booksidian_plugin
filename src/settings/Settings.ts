@@ -20,7 +20,7 @@ export class Settings extends PluginSettingTab {
 
 	getSelectedCount(): string {
 		const selected = Object.keys(this.getYAML()).length;
-		const total = 20;
+		const total = 21;
 		return `${selected}/${total}`;
 	}
 
@@ -288,6 +288,10 @@ export class Settings extends PluginSettingTab {
 			.addDropdown((dropdown) =>
 				dropdown
 					.addOption("", `${this.getSelectedCount()}`)
+					.addOption(
+						"tags",
+						`${this.getDisplay("tags", "tags (custom, comma-separated list)")}`,
+					)
 					.addOption("id", `${this.getDisplay("id")}`)
 					.addOption("author", `${this.getDisplay("author")}`)
 					.addOption(
@@ -333,10 +337,13 @@ export class Settings extends PluginSettingTab {
 						if (this.optionIsSelected(value)) {
 							delete this.currentYAML[value];
 						} else {
-							if (value === "coverImage")
-								// we want coverImage to default to a link
-								this.currentYAML[value] = `[[${value}]]`;
-							else this.currentYAML[value] = value;
+						if (value === "coverImage")
+							// we want coverImage to default to a link
+							this.currentYAML[value] = `[[${value}]]`;
+						else if (value === "tags")
+							// custom static tags, comma-separated
+							this.currentYAML[value] = "Book, Reading";
+						else this.currentYAML[value] = value;
 						}
 						await this.plugin.saveSettings();
 						this.display();

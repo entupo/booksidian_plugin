@@ -40,6 +40,38 @@ describe("stripFrontmatter", () => {
 	});
 });
 
+describe("custom tags field", () => {
+	test("tags dictionary entry emits a comma-separated tag list", () => {
+		const values = getBookValues(makeBook(), {
+			id: "id",
+			tags: "Book, Reading",
+		});
+		expect(values["tags"]).toStrictEqual(["Book", "Reading"]);
+	});
+
+	test("tags trims whitespace, strips hash prefixes and drops empty entries", () => {
+		const values = getBookValues(makeBook(), {
+			tags: "  #Book , Reading,  ,",
+		});
+		expect(values["tags"]).toStrictEqual(["Book", "Reading"]);
+	});
+
+	test("tags merges with tags produced by the shelves field", () => {
+		const values = getBookValues(
+			makeBook({ user_shelves: "currently-reading" }),
+			{
+				tags: "Book, Reading",
+				shelves: "#shelves",
+			},
+		);
+		expect(values["tags"]).toStrictEqual([
+			"Book",
+			"Reading",
+			"#currently-reading",
+		]);
+	});
+});
+
 function makeBook(overrides: Partial<GoodreadsBook> = {}): Book {
 	const base: GoodreadsBook = {
 		author: "Tony Reinke",
