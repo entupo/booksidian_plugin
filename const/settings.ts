@@ -8,6 +8,7 @@ export interface BooksidianSettings {
 	frequency: string;
 	overwrite: boolean;
 	overwritePreserveBody: boolean;
+	useIdMatch: boolean;
 	coverDownload: boolean;
 	coverDownloadLocation: string;
 }
@@ -26,6 +27,7 @@ export const DEFAULT_SETTINGS: BooksidianSettings = {
 	frequency: "0", // manual
 	overwrite: false,
 	overwritePreserveBody: true,
+	useIdMatch: true,
 	coverDownload: false,
 	coverDownloadLocation: "",
 };

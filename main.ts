@@ -1,6 +1,7 @@
 import { Plugin } from "obsidian";
 import { Shelf } from "src/Shelf";
 import { Settings } from "src/settings/Settings";
+import { DuplicateResolverModal } from "src/DuplicateResolver";
 import { BooksidianSettings, DEFAULT_SETTINGS } from "const/settings";
 
 export default class Booksidian extends Plugin {
@@ -25,6 +26,15 @@ export default class Booksidian extends Plugin {
 			name: "Booksidian Sync",
 			callback: () => {
 				this.updateLibrary();
+			},
+		});
+
+		// Detect notes that share the same Goodreads id and reconcile them
+		this.addCommand({
+			id: "booksidian-deduplicate",
+			name: "Booksidian: Find duplicate book notes",
+			callback: () => {
+				new DuplicateResolverModal(this.app, this).open();
 			},
 		});
 

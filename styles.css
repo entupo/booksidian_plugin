@@ -14,3 +14,26 @@
 .booksidian-plugin__sub-setting.is-hidden {
 	display: none;
 }
+
+.booksidian-plugin__duplicate-resolver fieldset.booksidian-plugin__duplicate-group {
+	border: 1px solid var(--background-modifier-border);
+	margin: 0 0 1em 0;
+	padding: 0.5em 1em;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35em;
+}
+
+label.booksidian-plugin__duplicate-option {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	cursor: pointer;
+}
+
+.booksidian-plugin__duplicate-buttons {
+	display: flex;
+	gap: 0.5em;
+	justify-content: flex-end;
+	margin-top: 1em;
+}

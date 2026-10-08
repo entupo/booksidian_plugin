@@ -6,6 +6,8 @@ module.exports = {
     moduleDirectories: ['node_modules', 'src', 'const', 'test'],
     modulePaths: ['<rootDir>'],
     moduleNameMapper: {
-      "^@/(.*)$": "<rootDir>/src/"
+      "^@/(.*)$": "<rootDir>/src/",
+      "^obsidian$": "<rootDir>/test/mocks/obsidian.cjs",
+      "^@sindresorhus/slugify$": "<rootDir>/test/mocks/slugify.cjs"
     }
   };

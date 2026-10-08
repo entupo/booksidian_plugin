@@ -190,6 +190,20 @@ export class Settings extends PluginSettingTab {
 			!this.plugin.settings.overwrite,
 		);
 
+		new Setting(containerEl)
+			.setName("Match notes by Goodreads ID")
+			.setDesc(
+				'When no note exists under the computed filename, look through the whole vault for a note whose frontmatter id (the field the dictionary maps to the Goodreads id) matches and update it instead of creating a duplicate. Only the dictionary fields are refreshed; other frontmatter and the note body are preserved. Requires "Overwrite".',
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.useIdMatch);
+
+				toggle.onChange((newValue) => {
+					this.plugin.settings.useIdMatch = newValue;
+					this.plugin.saveSettings();
+				});
+			});
+
 		containerEl.createEl("h4", { text: "Book covers" });
 
 		new Setting(containerEl)
