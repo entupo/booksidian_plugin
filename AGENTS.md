@@ -24,7 +24,6 @@
 - **Junk guard**: empty/undefined/NaN book fields emit `""`, never template residue like `series: Name` or `seriesName: seriesundefined`.
 - **Body safety**: id/matched notes outside the target folder always get body-preserving merge, regardless of `overwritePreserveBody`. When `parseFrontmatter` returns null (malformed YAML), fall back to the legacy regenerate-frontmatter path; never destroy content on parse errors.
 - **Duplicates**: `DuplicateResolverModal` groups by shared id; the survivor keeps its frontmatter/body and gains keys only the losers had; losers go to vault trash only when the user confirms. ZotLit notes (frontmatter `citekey`) are the preferred survivor.
-- **Cover audit**: "Find books with missing covers" (`src/CoverAudit.ts`) scans book notes (identified by frontmatter id) for cover references and flags: missing file, file outside the cover folder (`coverDownloadLocation`, default `<targetFolder>/cover`), still a Goodreads URL, or no cover property. Read-only report modal.
 - Vault frontmatter style: YAML arrays single-line (hence `flowLevel: 1` in merges); Obsidian Linter enforces key order and smart typography — do not fight it in generated YAML beyond that.
 
 ## Release And Style
