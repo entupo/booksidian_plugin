@@ -1,4 +1,11 @@
-import { App, debounce, Notice, PluginSettingTab, Setting } from "obsidian";
+import {
+	App,
+	debounce,
+	Modal,
+	Notice,
+	PluginSettingTab,
+	Setting,
+} from "obsidian";
 import { FolderSuggest } from "./suggesters/FolderSuggester";
 import Booksidian from "../../main";
 
@@ -365,6 +372,48 @@ export class Settings extends PluginSettingTab {
 				.addExtraButton(
 					(button) =>
 						button
+							.setTooltip("Rename property key")
+							.onClick(async () => {
+								new RenameKeyModal(
+									this.app,
+									key,
+									(newKey) => {
+										if (
+											!newKey ||
+											newKey === key ||
+											this.currentYAML.hasOwnProperty(
+												newKey,
+											)
+										) {
+											return;
+										}
+										// Rebuild the dictionary so the
+										// renamed key keeps its position.
+										const renamed: {
+											[k: string]: string;
+										} = {};
+										Object.keys(
+											this.currentYAML,
+										).forEach((existing) => {
+											renamed[
+												existing === key
+													? newKey
+													: existing
+											] = this.currentYAML[existing];
+										});
+										this.currentYAML = renamed;
+										this.plugin.settings.frontmatterDictionary =
+											renamed;
+										this.plugin.saveSettings();
+										this.display();
+									},
+								).open();
+							})
+							.setIcon("pencil"),
+				)
+				.addExtraButton(
+					(button) =>
+						button
 							.setTooltip("Convert to link")
 							.onClick(async () => {
 								if (value.startsWith("[[")) {
@@ -425,5 +474,64 @@ export class Settings extends PluginSettingTab {
 				);
 		});
 		containerEl.classList.add("booksidian-plugin__settings");
+	}
+}
+
+class RenameKeyModal extends Modal {
+	oldKey: string;
+	onSubmit: (newKey: string) => void;
+
+	constructor(
+		app: App,
+		oldKey: string,
+		onSubmit: (newKey: string) => void,
+	) {
+		super(app);
+		this.oldKey = oldKey;
+		this.onSubmit = onSubmit;
+	}
+
+	onOpen(): void {
+		this.contentEl.createEl("h3", { text: "Rename property key" });
+		this.contentEl.createEl("p", {
+			text: "Renames the YAML frontmatter key emitted on book notes. The value template keeps referencing the original field (e.g. coverImage or coverImageName).",
+		});
+
+		const inputWrapper = this.contentEl.createEl("div");
+		inputWrapper.style.display = "flex";
+		inputWrapper.style.gap = "0.5rem";
+		const input = inputWrapper.createEl("input", { type: "text" });
+		input.style.flexGrow = "1";
+		input.style.width = "100%";
+		input.value = this.oldKey;
+
+		const buttons = this.contentEl.createEl("div");
+		buttons.style.display = "flex";
+		buttons.style.gap = "0.5rem";
+		buttons.style.marginTop = "0.5rem";
+
+		const rename = buttons.createEl("button", {
+			text: "Rename",
+			type: "button",
+		});
+		rename.addEventListener("click", () => {
+			const newKey = input.value.trim();
+			if (newKey !== "") {
+				this.close();
+				this.onSubmit(newKey);
+			}
+		});
+
+		const cancel = buttons.createEl("button", {
+			text: "Cancel",
+			type: "button",
+		});
+		cancel.addEventListener("click", () => {
+			this.close();
+		});
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
 	}
 }

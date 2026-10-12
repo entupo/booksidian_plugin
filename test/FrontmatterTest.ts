@@ -40,7 +40,43 @@ describe("stripFrontmatter", () => {
 	});
 });
 
+describe("renamed property keys", () => {
+	test("renamed key resolves the source field inside the template", () => {
+		const values = getBookValues(makeBook(), {
+			image: "[[coverImageName]]",
+		});
+		expect(values["image"]).toBe("[[58152486.jpg]]");
+	});
+
+	test("coverImageName emits the bare cover filename", () => {
+		const values = getBookValues(makeBook(), {
+			coverImageName: "coverImageName",
+		});
+		expect(values["coverImageName"]).toBe("58152486.jpg");
+	});
+
+	test("renamed key with no resolvable field emits an empty string", () => {
+		const values = getBookValues(makeBook(), { image: "mystery" });
+		expect(values["image"]).toBe("");
+	});
+
+	test("custom key with empty cover path emits an empty string", () => {
+		const values = getBookValues(makeBook({ image_path: "" }), {
+			image: "[[coverImageName]]",
+		});
+		expect(values["image"]).toBe("");
+	});
+});
+
 describe("custom tags field", () => {
+	test("template without the key emits no undefined suffix", () => {
+		const values = getBookValues(makeBook(), {
+			coverImage: "[[image]]",
+		});
+		expect(values["coverImage"]).toBe(
+			"[[image]]Archives/Books/_covers/58152486.jpg",
+		);
+	});
 	test("tags dictionary entry emits a comma-separated tag list", () => {
 		const values = getBookValues(makeBook(), {
 			id: "id",

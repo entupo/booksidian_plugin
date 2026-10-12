@@ -64,9 +64,8 @@ export function getBookValues(
 			return;
 		}
 
-		const [prefix, postfix] = value.split(key);
-
 		if (key === "shelves") {
+			const [prefix = "", postfix = ""] = value.split(key);
 			const tagsOrPropertyKey = prefix === "#" ? "tags" : key;
 			const values: string[] = [];
 
@@ -84,10 +83,17 @@ export function getBookValues(
 				output[tagsOrPropertyKey] = values;
 			}
 		} else {
+			const { fieldKey, prefix, postfix } = resolveFieldTemplate(
+				key,
+				value,
+			);
 			const tagsOrPropertyKey = prefix === "#" ? "tags" : key;
-			const rawValue = (book as unknown as Record<string, unknown>)[
-				key
-			];
+			const rawValue =
+				fieldKey === ""
+					? undefined
+					: (book as unknown as Record<string, unknown>)[
+							fieldKey
+						];
 			const stringValue =
 				rawValue === undefined || rawValue === null
 					? ""
@@ -121,6 +127,68 @@ export function getBookValues(
 	});
 
 	return output;
+}
+
+/**
+ * Book properties a frontmatter template may reference. Keys of the
+ * frontmatter dictionary normally are the book property itself; when a
+ * row has been renamed to a custom YAML key (e.g. `image`), the
+ * template resolves the source field by finding one of these names
+ * inside the value (longest match first, so `coverImageName` wins over
+ * `coverImage`).
+ */
+export const KNOWN_BOOK_FIELDS: string[] = [
+	"id",
+	"rawTitle",
+	"fullTitle",
+	"title",
+	"series",
+	"seriesName",
+	"seriesNumber",
+	"subtitle",
+	"description",
+	"author",
+	"isbn",
+	"review",
+	"rating",
+	"avgRating",
+	"shelves",
+	"dateAdded",
+	"dateCreated",
+	"dateRead",
+	"datePublished",
+	"cover",
+	"coverImage",
+	"coverImageName",
+	"bookPage",
+	"pages",
+].sort((a, b) => b.length - a.length);
+
+/**
+ * Resolve the book field and prefix/postfix for a dictionary entry.
+ * A template must contain the key itself (e.g. `[[coverImage]]` -> prefix
+ * `[[`, postfix `]]`). If it does not (e.g. `[[image]]`), a renamed key
+ * is resolved by locating a known book field inside the value instead.
+ * Defaults missing split pieces to empty strings instead of dumping
+ * `undefined` into the output.
+ */
+function resolveFieldTemplate(
+	key: string,
+	value: string,
+): { fieldKey: string; prefix: string; postfix: string } {
+	if (!KNOWN_BOOK_FIELDS.includes(key)) {
+		const token = KNOWN_BOOK_FIELDS.find(
+			(field) => value.includes(field),
+		);
+		if (token) {
+			const [prefix = "", postfix = ""] = value.split(token);
+			return { fieldKey: token, prefix, postfix };
+		}
+		return { fieldKey: "", prefix: "", postfix: "" };
+	}
+
+	const [prefix = "", postfix = ""] = value.split(key);
+	return { fieldKey: key, prefix, postfix };
 }
 
 function isJunkValue(value: string): boolean {

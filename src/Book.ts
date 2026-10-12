@@ -51,6 +51,7 @@ export class Book {
 	datePublished: string;
 	cover: string;
 	coverImage: string;
+	coverImageName: string;
 	bookPage: string;
 
 	constructor(
@@ -74,6 +75,10 @@ export class Book {
 		this.datePublished = this.parseDate(book.book_published);
 		this.cover = book.image_url;
 		this.coverImage = book.image_path;
+		this.coverImageName = (book.image_path ?? "")
+			.split("/")
+			.pop()
+			.trim();
 		this.shelves = this.getShelves(book.user_shelves, this.dateRead);
 		this.bookPage = `https://www.goodreads.com/book/show/${this.id}`;
 	}
