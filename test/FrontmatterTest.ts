@@ -1,4 +1,5 @@
 import {
+	Frontmatter,
 	getBookValues,
 	mergeFrontmatter,
 	parseFrontmatter,
@@ -72,6 +73,40 @@ describe("renamed property keys", () => {
 			image: "[[coverImageName]]",
 		});
 		expect(values["image"]).toBe("");
+	});
+});
+
+describe("numeric properties", () => {
+	test("pages, rating and avgRating emit bare numbers", () => {
+		const values = getBookValues(
+			makeBook({
+				user_rating: "4",
+				identifiers: {
+					$: { id: "58152486" },
+					num_pages: ["316"],
+				},
+				average_rating: "4.05",
+			}) as Book,
+			{
+				pages: "pages",
+				rating: "rating",
+				avgRating: "avgRating",
+			isbn: "isbn",
+			},
+		);
+		expect(values["pages"]).toBe(316);
+		expect(values["rating"]).toBe(4);
+		expect(values["avgRating"]).toBe(4.05);
+		expect(values["isbn"]).toBe("1433578271");
+	});
+
+	test("dumped frontmatter renders numbers unquoted", () => {
+		const frontmatter = new Frontmatter(
+			{ rating: "rating", isbn: "isbn" },
+			makeBook({ user_rating: "4" }),
+		).getFrontmatter();
+		expect(frontmatter).toContain("rating: 4\n");
+		expect(frontmatter).toContain("isbn: '1433578271'\n");
 	});
 });
 
@@ -155,7 +190,7 @@ describe("getBookValues", () => {
 			author: "Tony Reinke",
 			isbn: "1433578271",
 			bookPage: "https://www.goodreads.com/book/show/58152486",
-			rating: "0",
+			rating: 0,
 		});
 	});
 
@@ -180,9 +215,9 @@ describe("getBookValues", () => {
 		expect(values).toStrictEqual({ series: "" });
 	});
 
-	test("NaN residue from templating is emitted as empty string", () => {
+	test("unset rating emits 0 as a bare number", () => {
 		const values = getBookValues(makeBook(), { rating: "rating" });
-		expect(values.rating).toBe("0");
+		expect(values.rating).toBe(0);
 	});
 });
 

@@ -120,8 +120,17 @@ export function getBookValues(
 					`${prefix}${sanitisedValue}${postfix}`,
 				];
 			} else {
+				// Numeric book properties (pages, rating, avgRating,
+				// seriesNumber) are real numbers. Emit them unquoted by
+				// keeping the number type instead of dumping a string
+				// like `'4'` (js-yaml re-quotes numeric-looking strings
+				// to preserve their type).
 				output[tagsOrPropertyKey] =
-					`${prefix}${sanitisedValue}${postfix}`;
+					prefix === "" &&
+					postfix === "" &&
+					typeof rawValue === "number"
+						? rawValue
+						: `${prefix}${sanitisedValue}${postfix}`;
 			}
 		}
 	});
