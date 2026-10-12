@@ -158,6 +158,35 @@ describe("cover scraping", () => {
 	});
 });
 
+import { getIdKeys } from "src/Book";
+
+describe("identity keys", () => {
+	test("the plain id dictionary entry is an id key", () => {
+		expect(getIdKeys({ id: "id", author: "author", tags: "Book" }))
+			.toStrictEqual(["id"]);
+	});
+
+	test("renamed id keys resolve via the template, with legacy id fallback", () => {
+		expect(
+			getIdKeys({
+				"goodreads-id": "id",
+				author: "author",
+				tags: "Book, Reading",
+			}),
+		).toStrictEqual(["goodreads-id", "id"]);
+	});
+
+	test("renamed keys whose template merely contains id as a substring do not count", () => {
+		expect(
+			getIdKeys({
+				"goodreads-id": "id",
+				tags: "solid, read",
+				title: "title",
+			}),
+		).toStrictEqual(["goodreads-id", "id"]);
+	});
+});
+
 describe("custom tags field", () => {
 	test("template without the key emits no undefined suffix", () => {
 		const values = getBookValues(makeBook(), {

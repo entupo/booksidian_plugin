@@ -10,6 +10,7 @@ import {
 	mergeFrontmatter,
 	formatFrontmatter,
 	stripFrontmatter,
+	resolveFieldTemplate,
 } from "./Frontmatter";
 import { writeFile } from "./helpers";
 
@@ -21,11 +22,26 @@ const TurndownService = require("turndown");
  * frontmatter dictionary (e.g. an entry `"id": "id"` yields `["id"]`).
  * Used both for matching an existing note by id during sync and for
  * finding duplicates.
+ *
+ * Renamed dictionary keys count too: `"goodreads-id": "id"` resolves
+ * the template to the `id` book field. When the id key was renamed,
+ * the legacy bare `id` key is also kept as a match source so notes
+ * created before the rename keep resolving until they are resynced.
  */
 export function getIdKeys(frontmatterDictionary: CurrentYAML): string[] {
-	return Object.entries(frontmatterDictionary)
-		.filter(([, bookField]) => bookField === "id")
-		.map(([frontmatterKey]) => frontmatterKey);
+	const keys: string[] = [];
+
+	Object.entries(frontmatterDictionary).forEach(([frontmatterKey, template]) => {
+		if (resolveFieldTemplate(frontmatterKey, template).fieldKey === "id") {
+			keys.push(frontmatterKey);
+		}
+	});
+
+	if (keys.some((key) => key !== "id") && !keys.includes("id")) {
+		keys.push("id");
+	}
+
+	return keys;
 }
 
 export class Book {

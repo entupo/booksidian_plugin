@@ -174,21 +174,35 @@ export const KNOWN_BOOK_FIELDS: string[] = [
 ].sort((a, b) => b.length - a.length);
 
 /**
+ * Longest-first search for a known book field inside a template
+ * value, matching at word boundaries so a plain tag such as `solid`
+ * does not resolve the `id` field.
+ */
+export function findTemplateField(value: string): string | null {
+	for (const field of KNOWN_BOOK_FIELDS) {
+		if (
+			new RegExp(`(^|[^A-Za-z])${field}([^A-Za-z]|$)`).test(value)
+		) {
+			return field;
+		}
+	}
+	return null;
+}
+
+/**
  * Resolve the book field and prefix/postfix for a dictionary entry.
  * A template must contain the key itself (e.g. `[[coverImage]]` -> prefix
- * `[[`, postfix `]]`). If it does not (e.g. `[[image]]`), a renamed key
- * is resolved by locating a known book field inside the value instead.
- * Defaults missing split pieces to empty strings instead of dumping
- * `undefined` into the output.
+ * `[[`, postfix `]]`). If it does not, a renamed key is resolved by
+ * locating a known book field inside the value instead. Defaults missing
+ * split pieces to empty strings instead of dumping `undefined` into the
+ * output.
  */
 export function resolveFieldTemplate(
 	key: string,
 	value: string,
 ): { fieldKey: string; prefix: string; postfix: string } {
 	if (!KNOWN_BOOK_FIELDS.includes(key)) {
-		const token = KNOWN_BOOK_FIELDS.find(
-			(field) => value.includes(field),
-		);
+		const token = findTemplateField(value);
 		if (token) {
 			const [prefix = "", postfix = ""] = value.split(token);
 			return { fieldKey: token, prefix, postfix };
