@@ -41,6 +41,13 @@ describe("stripFrontmatter", () => {
 });
 
 describe("renamed property keys", () => {
+	test("aliases key defaults to the title field", () => {
+		const values = getBookValues(makeBook(), { aliases: "title" });
+		expect(values["aliases"]).toBe(
+			"God Technology and the Christian Life",
+		);
+	});
+
 	test("renamed key resolves the source field inside the template", () => {
 		const values = getBookValues(makeBook(), {
 			image: "[[coverImageName]]",

@@ -27,7 +27,7 @@ export class Settings extends PluginSettingTab {
 
 	getSelectedCount(): string {
 		const selected = Object.keys(this.getYAML()).length;
-		const total = 21;
+		const total = 22;
 		return `${selected}/${total}`;
 	}
 
@@ -299,6 +299,10 @@ export class Settings extends PluginSettingTab {
 						"tags",
 						`${this.getDisplay("tags", "tags (custom, comma-separated list)")}`,
 					)
+					.addOption(
+						"aliases",
+						`${this.getDisplay("aliases", "aliases (custom, defaults to the title)")}`,
+					)
 					.addOption("id", `${this.getDisplay("id")}`)
 					.addOption("author", `${this.getDisplay("author")}`)
 					.addOption(
@@ -347,6 +351,9 @@ export class Settings extends PluginSettingTab {
 						if (value === "coverImage")
 							// we want coverImage to default to a link
 							this.currentYAML[value] = `[[${value}]]`;
+						else if (value === "aliases")
+							// custom aliases property, default to title
+							this.currentYAML[value] = "title";
 						else if (value === "tags")
 							// custom static tags, comma-separated
 							this.currentYAML[value] = "Book, Reading";
