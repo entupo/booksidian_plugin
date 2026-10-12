@@ -12,7 +12,6 @@
 	"keywords": [],
 	"license": "MIT",
 	"devDependencies": {
-		"@popperjs/core": "^2.11.8",
 		"@sindresorhus/slugify": "^3.0.0",
 		"@types/jest": "^29.4.0",
 		"@types/mustache": "^4.2.2",
