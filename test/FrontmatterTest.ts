@@ -1,4 +1,5 @@
 import {
+	buildCoverUpdates,
 	Frontmatter,
 	getBookValues,
 	mergeFrontmatter,
@@ -73,6 +74,31 @@ describe("renamed property keys", () => {
 			image: "[[coverImageName]]",
 		});
 		expect(values["image"]).toBe("");
+	});
+});
+
+describe("buildCoverUpdates", () => {
+	test("updates dictionary cover keys from a downloaded cover path", () => {
+		const updates = buildCoverUpdates(
+			{
+				coverImage: "[[coverImage]]",
+				image: "[[coverImageName]]",
+				title: "title",
+			},
+			"Archives/Books/_covers/58152486.jpg",
+		);
+		expect(updates).toStrictEqual({
+			coverImage: "[[Archives/Books/_covers/58152486.jpg]]",
+			image: "[[58152486.jpg]]",
+		});
+	});
+
+	test("returns empty updates when the dictionary has no cover keys", () => {
+		const updates = buildCoverUpdates(
+			{ title: "title", tags: "Book" },
+			"Archives/Books/_covers/58152486.jpg",
+		);
+		expect(updates).toStrictEqual({});
 	});
 });
 

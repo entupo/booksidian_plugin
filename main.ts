@@ -2,6 +2,7 @@ import { Plugin } from "obsidian";
 import { Shelf } from "src/Shelf";
 import { Settings } from "src/settings/Settings";
 import { DuplicateResolverModal } from "src/DuplicateResolver";
+import { refreshCoverForActiveNote } from "src/CoverRefresher";
 import { BooksidianSettings, DEFAULT_SETTINGS } from "const/settings";
 
 export default class Booksidian extends Plugin {
@@ -35,6 +36,16 @@ export default class Booksidian extends Plugin {
 			name: "Booksidian: Find duplicate book notes",
 			callback: () => {
 				new DuplicateResolverModal(this.app, this).open();
+			},
+		});
+
+		// Manually download/refresh the cover for the note in the
+		// active editor
+		this.addCommand({
+			id: "booksidian-download-cover",
+			name: "Booksidian: Download cover for current note",
+			callback: () => {
+				refreshCoverForActiveNote(this);
 			},
 		});
 

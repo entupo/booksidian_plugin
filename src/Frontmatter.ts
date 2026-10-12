@@ -200,6 +200,39 @@ function resolveFieldTemplate(
 	return { fieldKey: key, prefix, postfix };
 }
 
+/**
+ * Build frontmatter updates for the cover-related keys of the
+ * dictionary (`coverImage`, `coverImageName`, including renamed keys
+ * whose template references them). `coverImagePath` is the full path
+ * of the downloaded cover, e.g. `Archives/Books/_covers/58152486.jpg`.
+ */
+export function buildCoverUpdates(
+	currentYAML: CurrentYAML,
+	coverImagePath: string,
+): { [key: string]: FrontmatterValue } {
+	const output: { [key: string]: FrontmatterValue } = {};
+	const fileName = coverImagePath.split("/").pop();
+
+	Object.keys(currentYAML).forEach((key: string) => {
+		const { fieldKey, prefix, postfix } = resolveFieldTemplate(
+			key,
+			currentYAML[key],
+		);
+		if (fieldKey !== "coverImage" && fieldKey !== "coverImageName") {
+			return;
+		}
+		const rawValue =
+			fieldKey === "coverImage" ? coverImagePath : fileName;
+
+		// Respect the template as inline text: it may be "", inside a
+		// wikilink, or reference the other cover field (rare but legal,
+		// e.g. coverImageName = "coverImageName.jpg").
+		output[key] = `${prefix}${rawValue}${postfix}`;
+	});
+
+	return output;
+}
+
 function isJunkValue(value: string): boolean {
 	return (
 		value === "NaN" || value === "undefined" || value.includes("undefined")
