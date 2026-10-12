@@ -181,7 +181,7 @@ export const KNOWN_BOOK_FIELDS: string[] = [
  * Defaults missing split pieces to empty strings instead of dumping
  * `undefined` into the output.
  */
-function resolveFieldTemplate(
+export function resolveFieldTemplate(
 	key: string,
 	value: string,
 ): { fieldKey: string; prefix: string; postfix: string } {

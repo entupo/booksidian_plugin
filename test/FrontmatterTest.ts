@@ -136,6 +136,28 @@ describe("numeric properties", () => {
 	});
 });
 
+import { scrapeOgImageUrl } from "src/CoverRefresher";
+
+describe("cover scraping", () => {
+	test("og:image is extracted", () => {
+		expect(
+			scrapeOgImageUrl(
+				'<meta property="og:image" content="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/123.jpg"/>',
+			),
+		).toBe(
+			"https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/123.jpg",
+		);
+	});
+
+	test("the anonymous Goodreads site icon is rejected", () => {
+		expect(
+			scrapeOgImageUrl(
+				'picture</title><meta property="og:image" content="https://s.gr-assets.com/assets/icons/goodreads_icon_100x100-4a7d81b31d932cfc0be621ee15a14e70.png"/>',
+			),
+		).toBeNull();
+	});
+});
+
 describe("custom tags field", () => {
 	test("template without the key emits no undefined suffix", () => {
 		const values = getBookValues(makeBook(), {
