@@ -2,6 +2,7 @@ import { Plugin } from "obsidian";
 import { Shelf } from "src/Shelf";
 import { Settings } from "src/settings/Settings";
 import { DuplicateResolverModal } from "src/DuplicateResolver";
+import { CoverAuditModal } from "src/CoverAudit";
 import { BooksidianSettings, DEFAULT_SETTINGS } from "const/settings";
 
 export default class Booksidian extends Plugin {
@@ -35,6 +36,16 @@ export default class Booksidian extends Plugin {
 			name: "Booksidian: Find duplicate book notes",
 			callback: () => {
 				new DuplicateResolverModal(this.app, this).open();
+			},
+		});
+
+		// Audit book covers: missing files, covers outside the cover
+		// folder, or notes still using the remote Goodreads URL
+		this.addCommand({
+			id: "booksidian-cover-audit",
+			name: "Booksidian: Find books with missing covers",
+			callback: () => {
+				new CoverAuditModal(this.app, this).open();
 			},
 		});
 
