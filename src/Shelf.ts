@@ -77,6 +77,10 @@ export class Shelf {
 			}
 		} catch (e) {
 			console.warn(e);
+			new Notice(
+				`Booksidian: could not fetch Goodreads shelf "${this.shelfName}". Goodreads retired its RSS feeds in November 2026, so syncing from the feed is no longer possible.`,
+				10000,
+			);
 		}
 	}
 
