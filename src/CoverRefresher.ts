@@ -35,6 +35,11 @@ async function fetchUrl(url: string, maxHops = 5): Promise<FetchedResource> {
 					? httpGet
 					: httpsGet;
 				const request = doRequest(url, (result) => resolve(result));
+				request.setTimeout(15000, () =>
+					request.destroy(
+						new Error(`timeout fetching ${url}`),
+					),
+				);
 				request.on("error", reject);
 			},
 		);
@@ -60,6 +65,9 @@ function readBody(response: IncomingMessage): Promise<Buffer> {
 	return new Promise((resolve, reject) => {
 		const chunks: Buffer[] = [];
 		response.setEncoding("binary");
+		response.setTimeout(15000, () =>
+			response.destroy(new Error("timeout reading cover")),
+		);
 		response.on("data", (chunk: string) =>
 			chunks.push(Buffer.from(chunk, "binary")),
 		);

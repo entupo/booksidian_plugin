@@ -211,6 +211,25 @@ describe("custom tags field", () => {
 		expect(values["tags"]).toStrictEqual(["Book", "Reading"]);
 	});
 
+	test("tags support an optional [shelf] condition", () => {
+		const onCurrent = getBookValues(
+			makeBook({ user_shelves: "currently-reading" }),
+			{ tags: "Book, Reading[currently-reading]" },
+		);
+		expect(onCurrent["tags"]).toStrictEqual(["Book", "Reading"]);
+
+		const onRead = getBookValues(
+			makeBook({ user_shelves: "read" }),
+			{ tags: "Book, Reading[currently-reading]" },
+		);
+		expect(onRead["tags"]).toStrictEqual(["Book"]);
+
+		const multiple = getBookValues(makeBook({ user_shelves: "revisit" }), {
+			tags: "Book, Read[read|revisit]",
+		});
+		expect(multiple["tags"]).toStrictEqual(["Book", "Read"]);
+	});
+
 	test("tags merges with tags produced by the shelves field", () => {
 		const values = getBookValues(
 			makeBook({ user_shelves: "currently-reading" }),
@@ -269,6 +288,27 @@ describe("getBookValues", () => {
 			bookPage: "https://www.goodreads.com/book/show/58152486",
 			rating: 0,
 		});
+	});
+
+	test("a value naming another field emits that field without residue", () => {
+		// Dictionary entry `series: seriesName` (as configured in the
+		// vault) must emit the series name, not `Dune #1Name`.
+		const book = makeBook({
+			title: "The Grace of Kings (The Dandelion Dynasty, #1)",
+		});
+		const values = getBookValues(book, {
+			series: "seriesName",
+			seriesNumber: "seriesNumber",
+		});
+		expect(values["series"]).toBe("The Dandelion Dynasty");
+		expect(values["seriesNumber"]).toBe(1);
+	});
+
+	test("seriesNumber 0 without a series emits an empty string", () => {
+		const values = getBookValues(makeBook(), {
+			seriesNumber: "seriesNumber",
+		});
+		expect(values["seriesNumber"]).toBe("");
 	});
 
 	test("wikilink values wrap the book value", () => {

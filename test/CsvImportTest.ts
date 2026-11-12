@@ -93,6 +93,39 @@ describe("goodreadsBooksFromCsv", () => {
 		});
 	});
 
+	test("read books keep the exclusive shelf alongside custom shelves", () => {
+		const readRow = [
+			'="54493401"',
+			"Machine Vendetta",
+			"Alastair Reynolds",
+			"",
+			"",
+			'="0575090940"',
+			'="9780575090944"',
+			"0",
+			"4.10",
+			"",
+			"",
+			"416",
+			"2024",
+			"2024",
+			"",
+			"2026/01/02",
+			"favorites",
+			"",
+			"read",
+			"",
+			"",
+			"",
+			"0",
+			"0",
+		]
+			.map((cell) => (cell.includes(",") ? `"${cell}"` : cell))
+			.join(",");
+		const books = goodreadsBooksFromCsv(`${HEADER}\n${readRow}\n`);
+		expect(books[0].user_shelves).toBe("favorites, read");
+	});
+
 	test("skips rows without an id or title", () => {
 		const books = goodreadsBooksFromCsv(
 			`${HEADER}\n,No Id,,,,,,,,,,,,,,,,,,,,\n`,

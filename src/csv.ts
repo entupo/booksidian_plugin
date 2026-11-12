@@ -99,6 +99,17 @@ export function goodreadsBooksFromCsv(text: string): GoodreadsBook[] {
 			column(row, "Original Publication Year") ||
 			column(row, "Year Published");
 
+		// Bookshelves omits the exclusive shelf for the default read
+		// shelf, so merge both lists (order preserved, deduped).
+		const allShelves: string[] = [];
+		`${shelves}, ${exclusiveShelf}`
+			.split(",")
+			.map((shelf) => shelf.trim())
+			.filter((shelf) => shelf !== "")
+			.forEach((shelf) => {
+				if (!allShelves.includes(shelf)) allShelves.push(shelf);
+			});
+
 		books.push({
 			author,
 			title,
@@ -120,7 +131,7 @@ export function goodreadsBooksFromCsv(text: string): GoodreadsBook[] {
 			content: "",
 			contentSnippet: "",
 			guid: "",
-			user_shelves: shelves || exclusiveShelf,
+			user_shelves: allShelves.join(", "),
 			image_url: "",
 			image_path: "",
 		});

@@ -47,11 +47,38 @@ export function getBookValues(
 
 		// `tags` is a static, custom field: it does not template
 		// around a book property. Its dictionary value is a plain
-		// comma-separated tag list (e.g. `Book, Reading`).
+		// comma-separated tag list (e.g. `Book, Reading`). An entry
+		// may carry a shelf condition, e.g. `Reading[currently-reading]`
+		// or `Read[read|revisit]`, and is only emitted when the book is
+		// on one of those shelves.
 		if (key === "tags") {
 			const customTags: string[] = value
 				.split(",")
-				.map((tag) => tag.trim().replace(/^#/, ""))
+				.map((entry) => entry.trim())
+				.map((entry) => {
+					const conditional = entry.match(
+						/^(.*?)\s*\[([^\]]+)\]$/,
+					);
+					if (!conditional) {
+						return { tag: entry, shelves: null as string[] };
+					}
+					return {
+						tag: conditional[1].trim(),
+						shelves: conditional[2]
+							.split("|")
+							.map((shelf) => shelf.trim().toLowerCase())
+							.filter((shelf) => shelf !== ""),
+					};
+				})
+				.filter(
+					({ tag, shelves }) =>
+						tag !== "" &&
+						(shelves === null ||
+							(book.shelves ?? []).some((shelf) =>
+								shelves.includes(shelf.toLowerCase()),
+							)),
+				)
+				.map(({ tag }) => tag.replace(/^#/, ""))
 				.filter((tag) => tag.length > 0);
 
 			if (Array.isArray(output["tags"])) {
@@ -124,11 +151,14 @@ export function getBookValues(
 				// seriesNumber) are real numbers. Emit them unquoted by
 				// keeping the number type instead of dumping a string
 				// like `'4'` (js-yaml re-quotes numeric-looking strings
-				// to preserve their type).
+				// to preserve their type). A `seriesNumber: 0` means
+				// "no series", so it is emitted empty rather than 0.
 				output[tagsOrPropertyKey] =
-					prefix === "" &&
-					postfix === "" &&
-					typeof rawValue === "number"
+					fieldKey === "seriesNumber" && rawValue === 0
+						? ""
+						: prefix === "" &&
+						  postfix === "" &&
+						  typeof rawValue === "number"
 						? rawValue
 						: `${prefix}${sanitisedValue}${postfix}`;
 			}
@@ -201,6 +231,14 @@ export function resolveFieldTemplate(
 	key: string,
 	value: string,
 ): { fieldKey: string; prefix: string; postfix: string } {
+	// A value that is exactly another book field name means "emit that
+	// field's value under this key" (e.g. the dictionary entry
+	// `series: seriesName` must not produce `Dune #1Name` residue by
+	// splitting around `series`).
+	if (value !== key && KNOWN_BOOK_FIELDS.includes(value)) {
+		return { fieldKey: value, prefix: "", postfix: "" };
+	}
+
 	if (!KNOWN_BOOK_FIELDS.includes(key)) {
 		const token = findTemplateField(value);
 		if (token) {

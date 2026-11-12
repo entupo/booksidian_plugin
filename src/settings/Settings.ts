@@ -297,7 +297,7 @@ export class Settings extends PluginSettingTab {
 					.addOption("", `${this.getSelectedCount()}`)
 					.addOption(
 						"tags",
-						`${this.getDisplay("tags", "tags (custom, comma-separated list)")}`,
+						`${this.getDisplay("tags", "tags (custom; comma-separated, optional [shelf] condition)")}`,
 					)
 					.addOption(
 						"aliases",
@@ -355,8 +355,10 @@ export class Settings extends PluginSettingTab {
 							// custom aliases property, default to title
 							this.currentYAML[value] = "title";
 						else if (value === "tags")
-							// custom static tags, comma-separated
-							this.currentYAML[value] = "Book, Reading";
+							// custom static tags; Reading only while
+							// the book is on the currently-reading shelf
+							this.currentYAML[value] =
+								"Book, Reading[currently-reading]";
 						else this.currentYAML[value] = value;
 						}
 						await this.plugin.saveSettings();

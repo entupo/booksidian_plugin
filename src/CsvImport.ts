@@ -12,8 +12,24 @@ import { downloadCover } from "src/CoverRefresher";
 export async function importGoodreadsCsv(
 	plugin: Booksidian,
 	text: string,
-): Promise<{ imported: number; failed: number }> {
-	const feedBooks = goodreadsBooksFromCsv(text);
+): Promise<{ imported: number; failed: number; skipped: number }> {
+	const shelfFilter = plugin.settings.goodreadsShelves
+		.split(",")
+		.map((shelf) => shelf.trim().toLowerCase())
+		.filter((shelf) => shelf !== "");
+
+	const allBooks = goodreadsBooksFromCsv(text);
+	const feedBooks =
+		shelfFilter.length === 0
+			? allBooks
+			: allBooks.filter((book) =>
+					book.user_shelves
+						.split(",")
+						.map((shelf) => shelf.trim().toLowerCase())
+						.some((shelf) => shelfFilter.includes(shelf)),
+			  );
+	const skipped = allBooks.length - feedBooks.length;
+
 	const targetPath = plugin.settings.targetFolderPath || "./";
 
 	let imported = 0;
@@ -55,12 +71,12 @@ export async function importGoodreadsCsv(
 
 	new Notice(
 		`Booksidian: imported ${imported} book(s) from CSV${
-			failed ? `, ${failed} failed (see console)` : ""
-		}.`,
+			skipped ? `, skipped ${skipped} outside the configured shelves` : ""
+		}${failed ? `, ${failed} failed (see console)` : ""}.`,
 		8000,
 	);
 
-	return { imported, failed };
+	return { imported, failed, skipped };
 }
 
 export class CsvImportModal extends Modal {
@@ -94,8 +110,18 @@ export class CsvImportModal extends Modal {
 			}
 			this.selectedText = await file.text();
 			const count = goodreadsBooksFromCsv(this.selectedText).length;
+			const shelves = this.plugin.settings.goodreadsShelves
+				.split(",")
+				.map((shelf) => shelf.trim())
+				.filter((shelf) => shelf !== "");
 			status.setText(
-				`Selected ${file.name}: ${count} book(s). Import will create or update that many notes.`,
+				`Selected ${file.name}: ${count} book(s)${
+					shelves.length
+						? `; only those on ${shelves.join(
+								", ",
+						  )} are imported (configured shelves)`
+						: "; all rows are imported (no shelves configured)"
+				}.`,
 			);
 		});
 
