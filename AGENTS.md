@@ -12,7 +12,7 @@
 - The repo's user settings live in the vault's `data.json` (not present in the repo). Current values: targetFolderPath `Archives/Books`, overwrite + overwritePreserveBody on, useIdMatch on, full frontmatterDictionary incl. `series: seriesName`.
 
 ## Tests
-- `npx jest` runs everything (ts-jest, `testRegex: test/.*Test.ts`; suites: `BookTest`, `FrontmatterTest`). 38 tests must stay green. Single file: `npx jest test/FrontmatterTest.ts`.
+- `npx jest` runs everything (ts-jest, `testRegex: test/.*Test.ts`; suites: `BookTest`, `FrontmatterTest`, `CsvImportTest`). 61 tests must stay green. Single file: `npx jest test/FrontmatterTest.ts`.
 - Jest needs two mocks (upstream never fixed this): `test/mocks/obsidian.cjs` (the `obsidian` npm package is types-only, `main: ""`) mapped in `jest.config.js` as `^obsidian$`, and `test/mocks/slugify.cjs` for the ESM-only `@sindresorhus/slugify`.
 - Note matching itself is not unit-tested (needs the Obsidian app); the pure YAML/merge functions in `src/Frontmatter.ts` are the tested surface. Keep new logic pure-function where possible and test it there.
 
@@ -25,6 +25,7 @@
 - **Body safety**: id/matched notes outside the target folder always get body-preserving merge, regardless of `overwritePreserveBody`. When `parseFrontmatter` returns null (malformed YAML), fall back to the legacy regenerate-frontmatter path; never destroy content on parse errors.
 - **Duplicates**: `DuplicateResolverModal` groups by shared id; the survivor keeps its frontmatter/body and gains keys only the losers had; losers go to vault trash only when the user confirms. ZotLit notes (frontmatter `citekey`) are the preferred survivor.
 - **Manual cover pull**: "Download cover for current note" (`src/CoverRefresher.ts`) resolves a cover for the active note keyed by its Goodreads id: sources in order — remote `cover` URL in frontmatter → Open Library by note's ISBN (`?default=false`, follows redirects into archive.org; Google Books anonymous API is often 429-quota'd, treat as weak fallback) → Goodreads `/book/photo/<id>` (gated anonymously: the og:image you get is the site icon, `scrapeOgImageUrl` filters it). Writes `<coverDownloadLocation>/<id>.jpg`, then updates only the dictionary's cover-related keys (via `buildCoverUpdates` in `src/Frontmatter.ts`) with a body-preserving merge.
+- **RSS is dead**: Goodreads retired `/review/list_rss/...` (404 since Nov 2026). Sync can no longer fetch; `Shelf.fetchGoodreadsFeed` shows a Notice on failure. Replacement: "Import Goodreads CSV" (`src/CsvImport.ts` + pure `src/csv.ts`) reads a My Books export (Excel-style `="..."` ids/ISBNs, quoted multi-line reviews) and runs rows through the same `Book.createFile` pipeline — overwrite/id-match/cover-download rules unchanged; summary Notice at the end.
 - Vault frontmatter style: YAML arrays single-line (hence `flowLevel: 1` in merges); Obsidian Linter enforces key order and smart typography — do not fight it in generated YAML beyond that.
 
 ## Release And Style
