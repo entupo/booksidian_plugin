@@ -3,6 +3,7 @@ import { Shelf } from "src/Shelf";
 import { Settings } from "src/settings/Settings";
 import { DuplicateResolverModal } from "src/DuplicateResolver";
 import { refreshCoverForActiveNote } from "src/CoverRefresher";
+import { CsvImportModal } from "src/CsvImport";
 import { BooksidianSettings, DEFAULT_SETTINGS } from "const/settings";
 
 export default class Booksidian extends Plugin {
@@ -46,6 +47,15 @@ export default class Booksidian extends Plugin {
 			name: "Booksidian: Download cover for current note",
 			callback: () => {
 				refreshCoverForActiveNote(this);
+			},
+		});
+
+		// Import a Goodreads "My Books" CSV export (RSS feeds are gone)
+		this.addCommand({
+			id: "booksidian-import-csv",
+			name: "Booksidian: Import Goodreads CSV",
+			callback: () => {
+				new CsvImportModal(this.app, this).open();
 			},
 		});
 
